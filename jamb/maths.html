@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quiz by Sung</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .question-count {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .score-container {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .answer-option {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .answer-option:hover {
+            background-color: #f7fafc;
+            border-color: #cbd5e0;
+        }
+        
+        .answer-option.selected {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        
+        .answer-option.correct {
+            border-color: #48bb78;
+            background-color: #f0fff4;
+        }
+        
+        .answer-option.incorrect {
+            border-color: #f56565;
+            background-color: #fff5f5;
+        }
+        
+        .explanation {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            margin-top: 20px;
+            display: none;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .explanation.show {
+            display: block;
+        }
+        
+        .explanation h4 {
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .prev-btn {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .prev-btn:hover:not(:disabled) {
+            background-color: #cbd5e0;
+        }
+        
+        .next-btn {
+            background-color: #4299e1;
+            color: white;
+        }
+        
+        .next-btn:hover:not(:disabled) {
+            background-color: #3182ce;
+        }
+        
+        .submit-btn {
+            background-color: #48bb78;
+            color: white;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            background-color: #38a169;
+        }
+        
+        .results-container {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .results-container h2 {
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+        
+        .final-score {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4299e1;
+            margin-bottom: 20px;
+        }
+        
+        .restart-btn {
+            background-color: #4299e1;
+            color: white;
+            margin-top: 20px;
+        }
+        
+        .restart-btn:hover {
+            background-color: #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div id="quiz">
+            <div class="quiz-header">
+                <div class="question-count">Question <span id="current-question">1</span>/20</div>
+                <div class="score-container">Score: <span id="score">0</span></div>
+            </div>
+            
+            <div class="question-text" id="question-text"></div>
+            
+            <div class="answer-options" id="answer-options"></div>
+            
+            <div class="explanation" id="explanation">
+                <h4>Explanation:</h4>
+                <p id="explanation-text"></p>
+            </div>
+            
+            <div class="quiz-footer">
+                <button class="prev-btn" id="prev-btn" disabled>👈Previous</button>
+                <button class="next-btn" id="next-btn" disabled>Next👉</button>
+                <button class="submit-btn" id="submit-btn" disabled>Submit👨‍🎓</button>
+            </div>
+        </div>
+        
+        <div id="results" class="results-container" style="display: none;">
+            <h2>Quiz Completed! AYO LOVES YOU</h2>
+            <div class="final-score">Your Score: <span id="final-score">0</span>/20</div>
+            <button class="restart-btn" id="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script src="quiz.js"></script>
+</body>
+</html>

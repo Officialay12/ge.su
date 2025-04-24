@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sung Physics Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --primary-dark: #2575fc;
+            --correct: #4ade80;
+            --incorrect: #f87171;
+            --selected: #60a5fa;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--light);
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            padding: 2rem;
+            perspective: 1000px;
+        }
+        
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quiz-container:hover {
+            transform: rotateY(5deg) rotateX(2deg);
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .question-count, .score-container {
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            font-weight: 500;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .simulation-container {
+            height: 250px;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateZ(20px);
+        }
+        
+        #physics-simulation {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .answer-option {
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .answer-option:hover {
+            transform: translateY(-5px) translateZ(10px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .answer-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .answer-option:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .answer-option.selected {
+            border-color: var(--selected);
+            background: rgba(96, 165, 250, 0.2);
+            transform: translateZ(10px);
+        }
+        
+        .answer-option.correct {
+            border-color: var(--correct);
+            background: rgba(74, 222, 128, 0.2);
+            animation: pulseCorrect 0.5s;
+        }
+        
+        .answer-option.incorrect {
+            border-color: var(--incorrect);
+            background: rgba(248, 113, 113, 0.2);
+            animation: shake 0.5s;
+        }
+        
+        .explanation {
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            display: none;
+            transform-style: preserve-3d;
+            transform: translateZ(10px);
+            border-left: 4px solid var(--selected);
+        }
+        
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .explanation h4 {
+            margin-bottom: 1rem;
+            color: var(--selected);
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .explanation-diagram {
+            width: 100%;
+            height: 200px;
+            margin: 1rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+            z-index: -1;
+        }
+        
+        button:hover::before {
+            transform: translateX(100%);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .prev-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+        
+        .prev-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+        
+        .next-btn {
+            background: var(--primary-dark);
+            color: white;
+        }
+        
+        .next-btn:hover:not(:disabled) {
+            background: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6);
+        }
+        
+        .results-container {
+            text-align: center;
+            padding: 3rem;
+            display: none;
+            transform-style: preserve-3d;
+        }
+        
+        .results-container h2 {
+            margin-bottom: 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .final-score {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #f6d365, #fda085);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #ff758c, #ff7eb3);
+            color: white;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 117, 140, 0.6);
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .answer-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .quiz-container {
+                padding: 1.5rem;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .simulation-container {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="quiz-container">
+        <div id="quiz">
+            <div class="quiz-header">
+                <div class="question-count">Question <span id="current-question">1</span>/20</div>
+                <div class="score-container">Score: <span id="score">0</span></div>
+            </div>
+            
+            <div class="question-text" id="question-text"></div>
+            
+            <div class="simulation-container">
+                <div id="physics-simulation"></div>
+            </div>
+            
+            <div class="answer-options" id="answer-options"></div>
+            
+            <div class="explanation" id="explanation">
+                <h4>PHYSICS EXPLANATION</h4>
+                <div class="explanation-diagram" id="explanation-diagram"></div>
+                <p id="explanation-text"></p>
+            </div>
+            
+            <div class="quiz-footer">
+                <button class="prev-btn" id="prev-btn" disabled>← Previous</button>
+                <button class="next-btn" id="next-btn" disabled>Next →</button>
+                <button class="submit-btn" id="submit-btn" disabled>Submit🕵️‍♂️</button>
+            </div>
+        </div>
+        
+        <div id="results" class="results-container">
+            <h2>QUIZ COMPLETED! AYO LOVES YOU</h2>
+            <div class="final-score">SCORE: <span id="final-score">0</span>/20</div>
+            <button class="restart-btn" id="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script src="physics-quiz.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#ffffff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.3, "random": true },
+                "size": { "value": 3, "random": true },
+                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.2, "width": 1 },
+                "move": { "enable": true, "speed": 2, "direction": "none", "random": true, "straight": false, "out_mode": "out" }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "grab" },
+                    "onclick": { "enable": true, "mode": "push" }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
